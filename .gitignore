@@ -1,0 +1,53 @@
+# DJANGO SPECIFIC
+*.log
+*.pot
+local_settings.py
+app.db
+
+# FROM MY MAIN .gitignore FILE
+
+#LINUX IGNORES
+.*
+!.gitignore
+*~
+*.sw[a-p]
+
+# KDE
+.directory
+
+#PYTHON IGNORES
+
+*.py[co]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+
+# VIM IGNORES
+.*.sw[a-z]
+*.un~
+Session.vim#
+
+# C++
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Static libraries
+*.lai
+*.la
