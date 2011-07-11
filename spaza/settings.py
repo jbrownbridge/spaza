@@ -122,12 +122,22 @@ INSTALLED_APPS = (
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
+    'formatters': {
+	'simple': {
+	    'format': '%(levelname)s %(message)s'
+	}
+    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+	'console': {
+	    'level': 'DEBUG',
+	    'class': 'logging.StreamHandler',
+	    'formatter': 'simple'
+	}
     },
     'loggers': {
         'django.request':{
@@ -135,5 +145,10 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+	'spaza.views':{
+	    'handlers': ['console'],
+	    'level': 'DEBUG',
+	    'propagate': True,
+	},
     }
 }
