@@ -1,10 +1,12 @@
 from django.conf.urls.defaults import *
+from spaza.views import *
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+	(r'^/$', home, name=u'home'),
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
 
