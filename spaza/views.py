@@ -1,10 +1,10 @@
 from django.http import HttpResponse
 
 def home(request):
-	if request.method == 'GET':
-		return HttpResponse("GET request")
-	elif request.method == 'POST':
-		return HttpResponse("POST request")
-	else:
-		pass
+	returnMessageFormat = "msisdn=%s&message=%s&serviceType=%s"
+	msisdn      = request.REQUEST.get("msisdn", "no_cell_number")
+	message     = request.REQUEST.get("message", "no_message")
+	serviceType = "END" 
+	
+	return HttpResponse(returnMessageFormat % (msisdn, message, serviceType))
 	
