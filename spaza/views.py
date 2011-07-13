@@ -4,6 +4,9 @@ import logging
 
 log = logging.getLogger(__name__)
 
+def emulator(request):
+	return HttpResponse("Emulator")
+
 def home(request):
 	returnMessageFormat = "msisdn=%s&message=%s&serviceType=%s"
 	msisdn        = request.REQUEST.get("msisdn", "no_cell_number")

@@ -6,6 +6,7 @@ from spaza.views import *
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+	(r'^emulator/?', emulator),
 	(r'^.*/?$', home),
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
