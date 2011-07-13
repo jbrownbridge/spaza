@@ -1,0 +1,15 @@
+- fields:
+    code: C1
+    name: Chips
+    description: Some really nice chips
+    price: 3
+  pk: 1
+  model: spaza.product
+
+- fields:
+    code: C2
+    name: Coke
+    description: Some really nice coke... sniff
+    price: 100
+  pk: 2
+  model: spaza.product
