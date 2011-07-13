@@ -1,3 +1,11 @@
+# FIXME:    This is django ugliness, we should either choose to make the whole
+#           thing a Django app or we should remove the dependency entirely
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'spaza.settings'
+
+from django.conf import settings
+from spaza.models import Product
+
 class USSDMenu(object):
   def __init__(self, title=None):
     self._title = title
@@ -36,6 +44,8 @@ class USSDMenuItem(object):
 
 def buy_stuff():
   menu = USSDMenu("Buy Stuff")
+  for product in Product.objects.all():
+    menu.add_item("%s - R%s" % (product.name, product.price), buy_stuff)
   return menu
 
 def where_is_my_stuff():
