@@ -2,12 +2,13 @@ from django.conf.urls.defaults import *
 from spaza.views import *
 
 # Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
 urlpatterns = patterns('',
 	(r'^emulator/?', emulator),
-	(r'^.*/?$', home),
+  (r'^admin/', include(admin.site.urls)),
+  (r'^.*/?$', home),
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
 
@@ -15,5 +16,4 @@ urlpatterns = patterns('',
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    # (r'^admin/', include(admin.site.urls)),
 )
