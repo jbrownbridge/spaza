@@ -10,3 +10,7 @@ class Product(models.Model):
   def __unicode__(self):
     return u"%s: %s" % (self.code, self.name)
 
+class Vendor(models.Model):
+    name = models.CharField(max_length=256)
+    telnum = models.CharField(max_length=256)
+    info = models.TextField()
