@@ -37,8 +37,8 @@ Likewise to reactivate it to continue development use exactly the same command:
     (ve) $
     ...
 
-Running the server
-==================
+Running Django the server
+=========================
 
 To run the server on your local machine on port 8000 use the following command:
 
@@ -54,3 +54,13 @@ ipython for the advanced debugging features it provides:
     ...
 
 You can now view your server by opening http://127.0.0.1:8000 in your browser.
+
+Running XMPP Server
+=========================
+1. Create virtual environment: virtualenv --no-site-packages ve/
+2. Activate it source: ve/bin/activate
+3. Install requirements: pip install -r config/requirements.pip
+4. Start twisted server: twistd --pidfile=tmp/twistd.xmpp.pid -n xmpp --xmpp-username=ussd2@valency.co.za
+5. Enter password when prompted: easypass
+6. Add ussd2@valency.co.za as jabber contact in gtalk/etc.
+7. Send $start and follow menus
