@@ -7,7 +7,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
 	(r'^emulator/?', emulator),
-    (r'^admin/?', include(admin.site.urls)),
+    (r'^admin/', include(admin.site.urls)),
     (r'^.*/?$', home),
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
