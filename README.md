@@ -64,3 +64,8 @@ Running XMPP Server
 5. Enter password when prompted: easypass
 6. Add ussd2@valency.co.za as jabber contact in gtalk/etc.
 7. Send $start and follow menus
+
+Using USSD
+==================
+1. Dial *120*364*777*3532893#
+2. If this doesn't work contact Jason to update valency server.
