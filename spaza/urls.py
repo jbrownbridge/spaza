@@ -6,9 +6,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-	(r'^emulator/?', emulator),
-    (r'^admin/?', include(admin.site.urls)),
-    (r'^.*/?$', home),
+    (r'^admin/', include(admin.site.urls)),
+    (r'^/?$', flashmedia_ussd_landing_page),
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
 
