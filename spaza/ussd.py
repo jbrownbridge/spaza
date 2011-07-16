@@ -15,14 +15,14 @@ class USSDMenu(object):
     self._items.append(USSDMenuItem(description, callback))
 
   def __str__(self):
-    reply = "\\n".join(
+    reply = "\n".join(
       map(
         lambda x, y: u"%d. %s" % (x, str(y)),
         range(1, len(self._items) + 1),
         self._items))
     if self._title:
       if len(reply) > 0:
-        reply = "\\n".join([self._title, reply])
+        reply = "\n".join([self._title, reply])
       else:
         reply = self._title
     return reply
