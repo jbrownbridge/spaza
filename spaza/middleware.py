@@ -13,7 +13,7 @@ class SpazaMiddleware(object):
   that enters the system.
   """
 
-  def authenticate_user(self, request, username:
+  def authenticate_user(self, request, username):
     # First try to authenticate using username
     if username and len(username) > 0:
       if request.user.username != username:
