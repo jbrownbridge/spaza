@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib import auth
 
+from spaza.models import USSDSession
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -39,5 +41,6 @@ class SpazaMiddleware(object):
     msisdn = request.GET.get('msisdn', None)
     if msisdn and len(msisdn) > 0:
       user = self.authenticate_user(request, msisdn)
+      request.session['ussd_session'] = USSDSession.objects.recent(user)
     return None
 

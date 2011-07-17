@@ -7,9 +7,9 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
-    (r'^/?$', flashmedia_ussd_landing_page),
+    (r'^/?$', flashmedia_landing_page),
     # Hack for FlashMedia because MTN not updating
-    (r'^test\.php/?$', flashmedia_ussd_landing_page),
+    (r'^test\.php/?$', flashmedia_landing_page),
 
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),

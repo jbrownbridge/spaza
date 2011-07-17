@@ -1,6 +1,7 @@
 from spaza.models import *
 from django.contrib import admin
 
+admin.site.register(USSDSession)
 admin.site.register(Vendor)
 admin.site.register(Supplier)
 admin.site.register(Product)
