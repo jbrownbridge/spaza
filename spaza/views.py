@@ -47,10 +47,9 @@ def handle_start(session):
   session.save()
   return str(session.current_menu)
 
-def handle_end(request):
+def handle_end(session):
   session.current_menu = goodbye()
   session.save()
-  auth.logout(request)
   return str(session.current_menu)
 
 def flashmedia_response(msisdn, serviceType, message):
@@ -81,7 +80,7 @@ def flashmedia_parse(session, msisdn, serviceType, message = ""):
       return flashmedia_end(msisdn, response)
     else:
       return flashmedia_session(msisdn, response)
-      
+
 @login_required
 def flashmedia_landing_page(request):
   user = request.user

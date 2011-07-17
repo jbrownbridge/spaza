@@ -9,14 +9,14 @@ log = logging.getLogger(__name__)
 
 class SpazaMiddleware(object):
   """
-  Middleware authenticates or creates a new user for each msisdn
+  Middleware authenticates or creates a new user for each valid id
   that enters the system.
   """
 
-  def authenticate_user(self, request, msisdn):
-    # First try to authenticate using msisdn
-    if msisdn and len(msisdn) > 0:
-      if request.user.username != msisdn:
+  def authenticate_user(self, request, username:
+    # First try to authenticate using username
+    if username and len(username) > 0:
+      if request.user.username != username:
         auth.logout(request)
         authenticated = False
       else:
@@ -29,7 +29,7 @@ class SpazaMiddleware(object):
           log.debug("Authenticated inactive user forcibly logged-out: %s" % \
             request.user)
       else:
-        user = auth.authenticate(username=msisdn, password=msisdn)
+        user = auth.authenticate(username=username, password=username)
         if user and user.is_active:
           auth.login(request, user)
           log.debug("Authenticated user for login: %s" % request.user)
@@ -37,10 +37,13 @@ class SpazaMiddleware(object):
     return None
 
   def process_request(self, request):
-    # First try to authenticate using msisdn
     msisdn = request.GET.get('msisdn', None)
+    # First try to authenticate using msisdn
     if msisdn and len(msisdn) > 0:
-      user = self.authenticate_user(request, msisdn)
-      request.session['ussd_session'] = USSDSession.objects.recent(user)
+      username = msisdn
+    else:
+      return None
+    user = self.authenticate_user(request, username)
+    request.session['ussd_session'] = USSDSession.objects.recent(user)
     return None
 

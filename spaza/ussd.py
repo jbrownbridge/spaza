@@ -1,8 +1,3 @@
-# FIXME:    This is django ugliness, we should either choose to make the whole
-#           thing a Django app or we should remove the dependency entirely
-import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'spaza.settings'
-
 from django.conf import settings
 from spaza.models import Product
 
