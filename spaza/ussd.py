@@ -69,6 +69,12 @@ class USSDCloseMenu(USSDMenu):
     """
     return True
 
+  def add_item(self, description, callback):
+    raise NotImplementedError
+
+  def __str__(self):
+    return self._title
+
 class USSDContinueMenu(USSDMenu):
   """
   Continue method has slightly different behaviour than USSDMenu,
@@ -76,8 +82,11 @@ class USSDContinueMenu(USSDMenu):
   """
   def __init__(self, old_menu):
     super(USSDContinueMenu, self).__init__("Continue from last time?")
-    self.add_item("Yes", old_menu)
-    self.add_item("No", welcome())
+    super(USSDContinueMenu, self).add_item("Yes", old_menu)
+    super(USSDContinueMenu, self).add_item("No", welcome())
+
+  def add_item(self, description, callback):
+    raise NotImplementedError
 
   def answer(self, reply):
     try:
