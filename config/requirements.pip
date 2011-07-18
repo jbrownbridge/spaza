@@ -4,3 +4,4 @@ wokkel
 Django==1.3
 ipython
 PyYAML
+django-picklefield

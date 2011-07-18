@@ -1,3 +1,8 @@
+from django.core.management import setup_environ
+from spaza import settings
+
+setup_environ(settings)
+
 from twisted.words.xish import domish
 from twisted.words.protocols.jabber.jid import JID
 from wokkel import client, xmppim
@@ -6,6 +11,10 @@ from spaza.ussd import *
 import logging
 
 log = logging.getLogger(__name__)
+
+from spaza.views import handle_restore, handle_session, handle_start, handle_end
+from spaza.backend import SpazaAuthBackend
+from spaza.models import USSDSession
 
 class JabberProtocol(
   xmppim.MessageProtocol, 
@@ -39,6 +48,7 @@ class JabberProtocol(
   def onMessage(self, msg):
     log.debug(u"Received %s message from %s: %s", 
       msg['type'], msg['from'], msg.body)
+
     if msg['type'] == 'chat' and hasattr(msg, 'body') and msg.body:
       if self.message_handler:
         self.message_handler.answer(
@@ -62,21 +72,31 @@ class JabberProtocol(
 class XMPPMessageHandler(object):
   def __init__(self):
     self._current_menu = None
+    self.auth = SpazaAuthBackend()
 
   def answer(self, transport, recipient, message):
-    msg = str(message)
-    if msg == "$start":
-      self._current_menu = welcome()
-    elif msg == "$end":
-      self._current_menu = None
-      return
-    else:
-      if self._current_menu:
-        self._current_menu = self._current_menu.answer(msg)
-      else:
-        transport(recipient, "Use $start to create menu")
+    user = self.auth.authenticate(recipient)
+    if user:
+      session = USSDSession.objects.recent(user)
+      if session:
+        log.debug("User: %s USSD Session: %s" % (user, session))
+        msg = str(message)
+        if msg == "$start":
+          response = handle_start(session)
+        elif msg == "$end":
+          response = handle_end(session)
+        else:
+          if session.current_menu and not session.current_menu.is_finished():
+            response = handle_session(session, msg)
+          else:
+            response = "Use $start to create menu"
+        transport(recipient, response)
         return
-    transport(recipient, str(self._current_menu))
+      else:
+        transport(recipient, "Error: No USSD Session!")
+    else:
+      transport(recipient, "Error: No User!")
+
 
 class XMPPClient(client.XMPPClient):
   def __init__(self, username, password, host, port, message_handler=None):

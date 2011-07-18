@@ -13,6 +13,10 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+ADMIN_USERNAMES = [
+  'jason',
+]
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
@@ -90,12 +94,17 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+AUTHENTICATION_BACKENDS= (
+    'spaza.backend.SpazaAuthBackend',
+)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'spaza.middleware.SpazaMiddleware',
 )
 
 ROOT_URLCONF = 'spaza.urls'
@@ -148,6 +157,16 @@ LOGGING = {
         'django.request':{
             'handlers': ['mail_admins'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        'spaza.backend':{
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'spaza.middleware':{
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
         'spaza.views':{

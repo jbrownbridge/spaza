@@ -6,9 +6,11 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-	(r'^emulator/?', emulator),
     (r'^admin/', include(admin.site.urls)),
-    (r'^.*/?$', home),
+    (r'^/?$', flashmedia_landing_page),
+    # Hack for FlashMedia because MTN not updating
+    (r'^test\.php/?$', flashmedia_landing_page),
+
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
 
