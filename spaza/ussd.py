@@ -42,20 +42,53 @@ class USSDMenuItem(object):
   def __str__(self):
     return self.description
 
+#Buy Stuff Menus and Submenus
 def buy_stuff():
   menu = USSDMenu("Buy Stuff")
-  for product in Product.objects.all():
-    menu.add_item("%s - R%s" % (product.name, product.price), buy_stuff)
+  menu.add_item("List Products", list_products) #later to become search/browse by category
+  menu.add_item("List Items in cart", list_items_in_cart)
+  menu.add_item("Checkout", checkout)
   return menu
 
+def list_products():
+  menu - USSDMenu("Products")
+  for product in Product.objects.all():
+    menu.add_item("%s - R%s" % (product.name, product.price), product_menu)
+  return menu
+
+def list_items_in_cart():
+    pass
+
+def checkout():
+    pass
+
+def product_menu():
+    menu = USSDMenu("Product")
+    menu.add_item("Add to Cart", add_to_cart)
+    menu.add_item("View Description", view_description)
+    menu.add_item("Back", buy_stuff)
+    return menu
+
+def add_to_cart():
+    #check if cart already exists
+    #if not: create new and add to cart
+    #else: add to existing cart
+    pass
+
+def view_description():
+    pass
+
+#Where is my stuff menus and submenus
 def where_is_my_stuff():
   menu = USSDMenu("Where is my Stuff")
   return menu
 
+#What are people buying menus and submenus
 def what_are_people_buying():
   menu = USSDMenu("What are people buying")
   return menu
 
+#Help menu
 def help():
   menu = USSDMenu("No help - so ure screwed!")
   return menu
