@@ -111,7 +111,7 @@ def buy_stuff():
   return menu
 
 def list_products():
-  menu - USSDMenu("Products")
+  menu = USSDMenu("Products")
   for product in Product.objects.all():
     menu.add_item("%s - R%s" % (product.name, product.price), product_menu)
   return menu
