@@ -5,7 +5,14 @@ from twisted.python import usage
 from twisted.plugin import IPlugin
 from twisted.application.service import IServiceMaker
 
-from spaza.transport.xmpp import XMPPClient
+from django.core.management import setup_environ
+from spaza import settings
+
+setup_environ(settings)
+
+import os.path, sys
+
+from ussd.transport.xmpp import XMPPClient
 
 class Options(usage.Options):
   optParameters = [

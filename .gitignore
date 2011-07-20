@@ -2,7 +2,8 @@
 *.log
 *.pot
 local_settings.py
-app.db
+*.db
+*.cache
 
 # FROM MY MAIN .gitignore FILE
 

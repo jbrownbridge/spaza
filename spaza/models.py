@@ -1,74 +1,37 @@
 from django.db import models
-from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 
-from datetime import timedelta, datetime
-from picklefield.fields import PickledObjectField
+SIMPLE_ADDRESS_TEMPLATE = \
+_("""
+Name: %(name)s,
+Address: %(address)s,
+""")
 
-class USSDSessionManager(models.Manager):
-  INACTIVE_TIME_LIMIT = timedelta(minutes=15)
+class Address(models.Model):
+  user_shipping = models.OneToOneField(User, related_name='shipping_address',
+                                      blank=True, null=True)
+  user_billing = models.OneToOneField(User, related_name='billing_address',
+                                      blank=True, null=True)
 
-  def recent(self, user):
-    try:
-      session = super(USSDSessionManager, self) \
-        .get_query_set() \
-        .get(
-          # Session for current user
-          user=user,
-          # Restore session within timeframe if it ended incorrectly
-          updated_at__gte=datetime.now() - self.INACTIVE_TIME_LIMIT,
-          # Don't restore sessions that ended correctly
-          current_menu__isnull=False)
-      return session
-    except USSDSession.DoesNotExist, e:
-      return USSDSession.objects.create(user=user)
+  name = models.CharField(_('Name'), max_length=255)
+  address = models.CharField(_('Address'), max_length=255)
 
-class USSDSession(models.Model):
-  INACTIVE_TIME_LIMIT = timedelta(minutes=15)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now=True)
-  user = models.ForeignKey(User, null=True)
-  current_menu = PickledObjectField(blank=True)
-
-  objects = USSDSessionManager()
+  class Meta(object):
+    verbose_name = _('Address')
+    verbose_name_plural = _("Addresses")
 
   def __unicode__(self):
-    return "%s (%s)" % (self.user, self.pk)
+    return '%s (%s)' % (self.name, self.address)
 
-class Vendor(models.Model):
-    name = models.CharField(max_length=256)
-    telnum = models.CharField(max_length=256)
-    info = models.TextField()
+  def clone(self):
+    new_kwargs = dict([(fld.name, getattr(self, fld.name))
+                        for fld in self._meta.fields if fld.name != 'id'])
+    return self.__class__.objects.create(**new_kwargs)
 
-class Supplier(models.Model):
-    pass
-#more to be added here
+  def as_text(self):
+    return SIMPLE_ADDRESS_TEMPLATE % {
+      'name':self.name, 'address':self.address
+    }
 
-class Product(models.Model):
-  code = models.CharField(max_length=256)
-  name = models.CharField(max_length=256)
-  description = models.TextField()
-  price = models.DecimalField(max_digits=19, decimal_places=2)
 
-  def __unicode__(self):
-    return u"%s: %s" % (self.code, self.name)
-
-class Category(models.Model):
-    pass
-#more to be added here
-
-class Cart(models.Model):
-    pass
-#more to come
-
-class Order(models.Model):
-    pass
-#more to come
-
-class CartItem(models.Model):
-    pass
-#more to come
-
-class OrderItem(models.Model):
-    pass
-#more to come

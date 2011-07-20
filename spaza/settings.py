@@ -4,6 +4,8 @@ import os.path, sys
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "apps"))
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -20,7 +22,7 @@ ADMIN_USERNAMES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': os.path.join(PROJECT_ROOT, 'app.db'),                      # Or path to database file if using sqlite3.
+        'NAME': os.path.join(PROJECT_ROOT, 'spaza.db'),                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -95,7 +97,7 @@ TEMPLATE_LOADERS = (
 )
 
 AUTHENTICATION_BACKENDS= (
-    'spaza.backend.SpazaAuthBackend',
+    'ussd.backend.USSDAuthBackend',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -104,7 +106,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'spaza.middleware.SpazaMiddleware',
+    'ussd.middleware.USSDMiddleware',
 )
 
 ROOT_URLCONF = 'spaza.urls'
@@ -126,7 +128,15 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'django_extensions',
+    'polymorphic', # We need polymorphic installed for the shop
+    'south',
+    'shop', # The django SHOP application
+    #'shop.addressmodel', # The default Address and country models
     'spaza',
+    'ussd',
+    'commerce',
+    'shop_simplecategories',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -159,20 +169,30 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'spaza.backend':{
+        'ussd.backend':{
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'spaza.middleware':{
+        'ussd.middleware':{
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'spaza.views':{
+        'ussd.views':{
 	          'handlers': ['console'],
 	          'level': 'DEBUG',
 	          'propagate': True,
 	      },
     }
 }
+
+SHOP_ADDRESS_MODEL = 'spaza.models.Address'
+SHOP_SHIPPING_FLAT_RATE = '10'
+SHOP_SHIPPING_BACKENDS = [
+  'shop.shipping.backends.flat_rate.FlatRateShipping',
+]
+
+SHOP_PAYMENT_BACKENDS = [
+  'shop.payment.backends.pay_on_delivery.PayOnDeliveryBackend'
+]

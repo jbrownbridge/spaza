@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.contrib import auth
 
-from spaza.models import USSDSession
+from ussd.models import USSDSession
 
 import logging
 
 log = logging.getLogger(__name__)
 
-class SpazaMiddleware(object):
+class USSDMiddleware(object):
   """
   Middleware authenticates or creates a new user for each valid id
   that enters the system.

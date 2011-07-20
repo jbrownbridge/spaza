@@ -1,20 +1,20 @@
-from django.core.management import setup_environ
-from spaza import settings
+#from django.core.management import setup_environ
+#from spaza import settings
 
-setup_environ(settings)
+#setup_environ(settings)
 
 from twisted.words.xish import domish
 from twisted.words.protocols.jabber.jid import JID
 from wokkel import client, xmppim
-from spaza.ussd import *
+from ussd.menu import *
 
 import logging
 
 log = logging.getLogger(__name__)
 
-from spaza.views import handle_restore, handle_session, handle_start, handle_end
-from spaza.backend import SpazaAuthBackend
-from spaza.models import USSDSession
+from ussd.api import handle_restore, handle_session, handle_start, handle_end
+from ussd.backend import USSDAuthBackend
+from ussd.models import USSDSession
 
 class JabberProtocol(
   xmppim.MessageProtocol, 
@@ -72,7 +72,7 @@ class JabberProtocol(
 class XMPPMessageHandler(object):
   def __init__(self):
     self._current_menu = None
-    self.auth = SpazaAuthBackend()
+    self.auth = USSDAuthBackend()
 
   def answer(self, transport, recipient, message):
     user = self.auth.authenticate(recipient)

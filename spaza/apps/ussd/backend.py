@@ -5,7 +5,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-class SpazaAuthBackend:
+class USSDAuthBackend:
   supports_object_permissions = True
   supports_anonymous_user = True
   supports_inactive_user = True

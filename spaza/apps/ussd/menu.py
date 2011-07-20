@@ -1,5 +1,5 @@
 from django.conf import settings
-from spaza.models import Product
+from commerce.models import WholesalerProduct as Product
 
 class USSDMenuItem(object):
   def __init__(self, description, callback):
@@ -113,7 +113,7 @@ def buy_stuff():
 def list_products():
   menu = USSDMenu("Products")
   for product in Product.objects.all():
-    menu.add_item("%s - R%s" % (product.name, product.price), product_menu)
+    menu.add_item("%s - R%s" % (product.name, product.unit_price), product_menu)
   return menu
 
 def list_items_in_cart():
@@ -130,6 +130,7 @@ def product_menu():
     return menu
 
 def add_to_cart():
+    return product_menu()
     #check if cart already exists
     #if not: create new and add to cart
     #else: add to existing cart
