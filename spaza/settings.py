@@ -17,6 +17,7 @@ MANAGERS = ADMINS
 
 ADMIN_USERNAMES = [
   'jason',
+  'matt',
 ]
 
 DATABASES = {
