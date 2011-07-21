@@ -1,5 +1,11 @@
 from django.conf import settings
 from commerce.models import WholesalerProduct as Product
+from commerce.api import get_cart_for_user
+from shop.models.cartmodel import CartItem
+
+import logging
+
+log = logging.getLogger(__name__)
 
 class USSDMenuItem(object):
   def __init__(self, description, callback):
@@ -44,9 +50,9 @@ class USSDMenu(object):
         reply = self._title
     return reply
  
-  def answer(self, reply):
+  def answer(self, reply, *args, **kwargs):
     try:
-      return self.items[int(reply) - 1].callback()
+      return self.items[int(reply) - 1].callback(*args, **kwargs)
     except:
       pass
     return self
@@ -83,7 +89,7 @@ class USSDContinueMenu(USSDMenu):
   def add_item(self, description, callback):
     raise NotImplementedError
 
-  def answer(self, reply):
+  def answer(self, reply, *args, **kwargs):
     try:
       return self.items[int(reply) -1].callback
     except:
@@ -103,64 +109,71 @@ class USSDStartMenu(USSDMenu):
     self.add_item("Help", help)
 
 #Buy Stuff Menus and Submenus
-def buy_stuff():
+def buy_stuff(*args, **kwargs):
   menu = USSDMenu("Buy Stuff")
   menu.add_item("List Products", list_products) #later to become search/browse by category
   menu.add_item("List Items in cart", list_items_in_cart)
   menu.add_item("Checkout", checkout)
   return menu
 
-def list_products():
+def list_products(*args, **kwargs):
   menu = USSDMenu("Products")
   for product in Product.objects.all():
     menu.add_item("%s - R%s" % (product.name, product.unit_price), product_menu)
   return menu
 
-def list_items_in_cart():
+def list_items_in_cart(*args, **kwargs):
+    menu = USSDMenu("Cart Items")
+    session = kwargs.get('session', None)
+    if session:
+      cart = get_cart_for_user(session.user)
+      for item in CartItem.objects.filter(cart=cart):
+        item.update()
+        menu.add_item(str(item), None)
+    return menu
+
+def checkout(*args, **kwargs):
     pass
 
-def checkout():
-    pass
-
-def product_menu():
+def product_menu(*args, **kwargs):
     menu = USSDMenu("Product")
     menu.add_item("Add to Cart", add_to_cart)
     menu.add_item("View Description", view_description)
     menu.add_item("Back", buy_stuff)
     return menu
 
-def add_to_cart():
+def add_to_cart(*args, **kwargs):
     return product_menu()
     #check if cart already exists
     #if not: create new and add to cart
     #else: add to existing cart
     pass
 
-def view_description():
+def view_description(*args, **kwargs):
     pass
 
 #Where is my stuff menus and submenus
-def where_is_my_stuff():
+def where_is_my_stuff(*args, **kwargs):
   menu = USSDMenu("Where is my Stuff")
   return menu
 
 #What are people buying menus and submenus
-def what_are_people_buying():
+def what_are_people_buying(*args, **kwargs):
   menu = USSDMenu("What are people buying")
   return menu
 
 #Help menu
-def help():
+def help(*args, **kwargs):
   menu = USSDMenu("No help - so ure screwed!")
   return menu
 
-def welcome():
+def welcome(*args, **kwargs):
   return USSDStartMenu()
 
-def goodbye():
+def goodbye(*args, **kwargs):
   return USSDCloseMenu()
 
-def continue_from_last_time(old_menu):
+def continue_from_last_time(old_menu, *args, **kwargs):
   if isinstance(old_menu, USSDContinueMenu):
     return old_menu
   elif isinstance(old_menu, USSDStartMenu):

@@ -11,7 +11,7 @@ def handle_restore(session):
   return str(session.current_menu)
 
 def handle_session(session, message):
-  session.current_menu = session.current_menu.answer(message)
+  session.current_menu = session.current_menu.answer(message, session=session)
   session.save()
   return str(session.current_menu)
 

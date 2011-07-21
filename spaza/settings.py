@@ -184,6 +184,12 @@ LOGGING = {
 	          'level': 'DEBUG',
 	          'propagate': True,
 	      },
+        'commerce.api':{
+	          'handlers': ['console'],
+	          'level': 'DEBUG',
+	          'propagate': True,
+	      },
+
     }
 }
 
