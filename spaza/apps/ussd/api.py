@@ -1,6 +1,6 @@
 import logging
 
-from ussd.menu import *
+from ussd.menu.helpers import *
 
 log = logging.getLogger(__name__)
 

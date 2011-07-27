@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import slugify
 
 from shop_simplecategories.models import Category
-from commerce.models import Wholesaler
+from commerce.models import Wholesaler, Manufacturer
 from commerce.models import WholesalerProduct as Product
 from decimal import *
 
@@ -39,7 +39,15 @@ class Command(BaseCommand):
 
   def __c(self, s):
     from django.utils.html import escape
-    return s.encode('ascii', 'xmlcharrefreplace')
+    return s.encode('ascii', 'xmlcharrefreplace').strip()
+
+  def getManufacturer(self, name):
+    unknown = Manufacturer.objects.get_or_create(name='UNKNOWN')[0]
+    name_array = name.split(':')
+    if len(name_array) == 1:
+      return unknown
+    else:
+      return Manufacturer.objects.get_or_create(name=name_array[0].strip().upper())[0]
 
   def importMakroProducts(self, wholesaler, products):
 #     data.append({
@@ -62,6 +70,7 @@ class Command(BaseCommand):
             .quantize(Decimal('.01'), rounding=ROUND_DOWN),
           wholesaler = wholesaler,
           link = product['link'],
+          manufacturer = self.getManufacturer(name),
         )
         if created:
           p.slug = slugify(p.name)
@@ -87,6 +96,7 @@ class Command(BaseCommand):
             .quantize(Decimal('.01'), rounding=ROUND_DOWN),
           wholesaler = wholesaler,
           link = product['link'],
+          manufacturer = self.getManufacturer(name),
         )
         if created:
           p.slug = slugify(p.name)

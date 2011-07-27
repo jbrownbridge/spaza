@@ -15,7 +15,14 @@ class Wholesaler(models.Model):
     else:
       return self.name
 
+class Manufacturer(models.Model):
+  name = models.CharField(max_length=256)
+ 
+  def __unicode__(self):
+    return self.name
+
 class WholesalerProduct(ShopProduct):
   wholesaler = models.ForeignKey(Wholesaler)
+  manufacturer = models.ForeignKey(Manufacturer, blank=True, null=True)
   link = models.URLField(verify_exists=False)
 

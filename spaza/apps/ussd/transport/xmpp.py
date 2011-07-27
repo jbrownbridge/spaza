@@ -1,16 +1,16 @@
-#from django.core.management import setup_environ
-#from spaza import settings
-
-#setup_environ(settings)
-
 from twisted.words.xish import domish
 from twisted.words.protocols.jabber.jid import JID
 from wokkel import client, xmppim
 from ussd.menu import *
 
+from twisted.python import log
+
 import logging
 
-log = logging.getLogger(__name__)
+# Evil I know :(
+log.debug = lambda x: log.msg(x, logLevel=logging.DEBUG)
+log.info = lambda x: log.msg(x, logLevel=logging.WARN)
+log.error = lambda x: log.msg(x, logLevel=logging.ERROR)
 
 from ussd.api import handle_restore, handle_session, handle_start, handle_end
 from ussd.backend import USSDAuthBackend
@@ -20,7 +20,7 @@ class JabberProtocol(
   xmppim.MessageProtocol, 
   xmppim.PresenceClientProtocol, 
   xmppim.RosterClientProtocol):
-  
+ 
   def __init__(self, message_handler=None):
     xmppim.MessageProtocol.__init__(self)
     self.message_handler = message_handler
@@ -33,41 +33,51 @@ class JabberProtocol(
     self.roster = self.getRoster()
 
   def connectionMade(self):
-    print "Connection Made"
+    log.debug("Connection Made")
 
   def subscribeReceived(self, entity):
     xmppim.PresenceClientProtocol.subscribe(self, entity)
-    log.info(u"Received and accepted subscription request from %s",
-       entity.full())
+    log.info(u"Received and accepted subscription request from %s" % entity.full())
 
   def unsubscribeReceived(self, entity):
     xmppim.PresenceClientProtocol.unsubscribe(self, entity)
-    log.info(u"Received and accepted unsubscribe request from %s",
-       entity.full())
+    log.info(u"Received and accepted unsubscribe request from %s" % entity.full())
 
   def onMessage(self, msg):
-    log.debug(u"Received %s message from %s: %s", 
-      msg['type'], msg['from'], msg.body)
+    log.debug(u"Received %s message from %s: %s" % (msg['type'], msg['from'], msg.body))
 
-    if msg['type'] == 'chat' and hasattr(msg, 'body') and msg.body:
-      if self.message_handler:
-        self.message_handler.answer(
-          transport = self.chat,
-          recipient = msg['from'],
-          message = msg.body)
-      else:
-        print "Message from %s: %s" % (msg['from'], msg.body)
-        self.chat(msg['from'], "Message received sir!")
+    if msg.x and msg.x.defaultUri == 'jabber:x:delay':
+      log.debug(u"Ignoring delayed message")
+      return
+
+    if msg.body is None:
+      log.debug(u'Ignoring empty message')
+      self.chat(msg['from'], "Use $start to create menu")
+      return
+
+    try:
+      if msg['type'] == 'error':
+        log.debug("Error message received from %s: %s" % (msg['from'], msg.body))
+        return
+      elif msg['type'] == 'chat':
+        if self.message_handler:
+          self.message_handler.answer(
+            transport = self.chat,
+            recipient = msg['from'],
+            message = msg.body)
+        else:
+          self.chat(msg['from'], "Message received sir!")
+    except Exception, e:
+      log.error("Some error occurred: %s" % e)
 
   def chat(self, to, body):
-    reply = domish.Element((None, 'message'))
-    reply['to'] = to
-    reply['from'] = self.parent.jid.full()
-    reply['type'] = 'chat'
-    reply.addElement('body', content=body)
-    xmppim.MessageProtocol.send(self, reply)
-    log.debug(u"Sent %s reply to %s: %s", 
-      reply['type'], reply['to'], reply.body)
+    message = domish.Element((None, 'message'))
+    message['to'] = to
+    message['from'] = self.parent.jid.full()
+    message['type'] = 'chat'
+    message.addElement('body', content=body)
+    self.xmlstream.send(message)
+    log.debug(u"Sent %s message (len=%d) to %s: %s" % (message['type'], len(str(message.body)), message['to'], message.body))
 
 class XMPPMessageHandler(object):
   def __init__(self):
@@ -85,12 +95,18 @@ class XMPPMessageHandler(object):
           response = handle_start(session)
         elif msg == "$end":
           response = handle_end(session)
+        elif msg == "$error":
+          import pdb
+          pdb.set_trace()
         else:
           if session.current_menu and not session.current_menu.is_finished():
             response = handle_session(session, msg)
           else:
             response = "Use $start to create menu"
-        transport(recipient, response)
+        if recipient and response:
+          transport(recipient, response)
+        else:
+          log.error("Either recipient (%s) or response (%s) is not valid!" % (recipient, response))
         return
       else:
         transport(recipient, "Error: No USSD Session!")
