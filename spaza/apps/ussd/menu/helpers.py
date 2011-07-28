@@ -2,7 +2,8 @@ from django.conf import settings
 from commerce.api import get_cart_for_user
 from shop.models.cartmodel import CartItem
 
-from menus import USSDMenu, USSDStartMenu, USSDCloseMenu, USSDContinueMenu, USSDProductListMenu, USSDTrolleyMenu
+from menus import USSDMenu, USSDStartMenu, USSDCloseMenu, USSDContinueMenu
+from menus import USSDManufacturerListMenu, USSDManufacturerProductsListMenu, USSDProductListMenu, USSDTrolleyMenu
 
 from items import *
 
@@ -11,7 +12,7 @@ log = logging.getLogger(__name__)
 #Buy Stuff Menus and Submenus
 def buy_stuff(*args, **kwargs):
   menu = USSDMenu("Buy Stuff", back_menu=kwargs['parent'])
-  menu.add_item("Show products", list_products) #later to become search/browse by category
+  menu.add_item("Show products", list_manufacturers) #later to become search/browse by category
   menu.add_item("Show trolley", list_items_in_trolley)
   menu.add_item("Empty trolley", empty_trolley)
   menu.add_item("Pay for trolley", checkout)
@@ -25,6 +26,14 @@ def empty_trolley(*args, **kwargs):
     if cart:
       cart.empty()
   return kwargs['parent']() 
+
+def list_manufacturers(*args, **kwargs):
+  return USSDManufacturerListMenu(kwargs['parent'], list_products_per_manufacturer)
+
+def list_products_per_manufacturer(*args, **kwargs):
+  manufacturer = kwargs.get('item').object
+  return USSDManufacturerProductsListMenu(
+    manufacturer, kwargs['parent'], product_detail)
 
 def list_products(*args, **kwargs):
   return USSDProductListMenu("Products", kwargs['parent'], product_detail)

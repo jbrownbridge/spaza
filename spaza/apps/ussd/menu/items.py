@@ -34,6 +34,9 @@ def shorten(text, max_length=20):
   else:
     return str(text)[:17] + "..."
 
+def create_manufacturer_menu_item(x, callback):
+  return USSDDatabaseMenuItem(shorten(x.name), callback, x)
+
 def create_product_menu_item(x, callback):
   product_string = "%s R%s" % (shorten(x.name.split(':')[1]), x.unit_price)
   return USSDDatabaseMenuItem(product_string, callback, x)

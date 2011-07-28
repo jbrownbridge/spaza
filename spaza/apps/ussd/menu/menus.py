@@ -55,11 +55,10 @@ class USSDMenu(object):
         lambda x, y: u"%d. %s" % (x, self.get_item_text(y, short)),
         range(1, len(self.items) + 1),
         self.items))
-    if self._title:
-      if len(reply) > 0:
-        reply = "\n".join([self._title, reply])
-      else:
-        reply = self._title
+    if len(reply) > 0:
+      reply = "\n".join([self.title, reply])
+    else:
+      reply = self.title
     return reply
 
   def __str__(self):
@@ -100,6 +99,25 @@ class USSDListMenu(USSDMenu):
       self.__page = paginator.page(1)
     except EmptyPage:
       self.__page = paginator.page(paginator.num_pages)
+  
+  @property
+  def title(self):
+    parent_title = super(USSDListMenu, self).title
+    if self.num_pages > 1:
+      return "%s (%d/%d)" % ( \
+        parent_title, 
+        self.__page.number, 
+        self.__page.paginator.num_pages)
+    else:
+      return parent_title
+
+  @property
+  def current_page_number(self):
+    return self.__page.number
+
+  @property
+  def num_pages(self):
+    return self.__page.paginator.num_pages
 
   @property
   def objects(self):
@@ -110,7 +128,7 @@ class USSDListMenu(USSDMenu):
 
   def menu_for_page(self, page):
     return USSDListMenu(
-      self.title, 
+      super(USSDListMenu, self).title, 
       self.back_menu, 
       self.objects,
       self._create_item_callback,
@@ -134,11 +152,12 @@ class USSDListMenu(USSDMenu):
   @property
   def items(self):
     items = [USSDMenuItem("Back", self.back_menu)]
-    if self.__page.has_previous():
-      items.append(self.previous_page)
     for obj in self.__page.object_list:
       items.append(self._create_item_callback(obj, self._item_callback))
-    if self.__page.has_next(): 
+    #if self.__page.has_next(): 
+    #if self.__page.has_previous():
+    if self.num_pages > 1:
+      items.insert(1, self.previous_page)
       items.append(self.next_page)
     return items
 
@@ -202,7 +221,7 @@ class USSDCloseMenu(USSDMenu):
     raise NotImplementedError
 
   def __str__(self):
-    return self._title
+    return self.title
 
 class USSDContinueMenu(USSDMenu):
   """
@@ -217,16 +236,40 @@ class USSDContinueMenu(USSDMenu):
   def add_item(self, description, callback):
     raise NotImplementedError
 
+class USSDManufacturerListMenu(USSDListMenu):
+  """
+  Menu that handles products by wrappin them in the item
+  """
+  
+  def __init__(self, back_menu, callback):
+    from commerce.models import Manufacturer
+    from items import create_manufacturer_menu_item
+    manufacturers = Manufacturer.objects.all().exclude(name='').order_by('name')
+    super(USSDManufacturerListMenu, self).__init__("Brands", back_menu, manufacturers, create_manufacturer_menu_item,callback)
+
+class USSDManufacturerProductsListMenu(USSDListMenu):
+  """
+  Menu that handles products by wrappin them in the item
+  """
+  
+  def __init__(self, manufacturer, back_menu, product_callback):
+    from commerce.models import WholesalerProduct
+    from items import create_product_menu_item
+    title = "%s" % manufacturer.name
+    products = WholesalerProduct.objects.filter(manufacturer=manufacturer).order_by('slug')
+    super(USSDManufacturerProductsListMenu, self).__init__(title, back_menu, products, create_product_menu_item, product_callback)
+
 class USSDProductListMenu(USSDListMenu):
   """
   Menu that handles products by wrappin them in the item
   """
   
-  def __init__(self, title, back_menu, product_callback):
-    from commerce.models import Manufacturer, WholesalerProduct
+  def __init__(self, title, back_menu, product_callback, products=None):
     from items import create_product_menu_item
-    unknown = Manufacturer.objects.get(name="UNKNOWN")
-    products = WholesalerProduct.objects.exclude(manufacturer=unknown).order_by('slug')
+    if not products:
+      from commerce.models import Manufacturer, WholesalerProduct
+      unknown = Manufacturer.objects.get(name="UNKNOWN")
+      products = WholesalerProduct.objects.exclude(manufacturer=unknown).order_by('slug')
     super(USSDProductListMenu, self).__init__(title, back_menu, products, create_product_menu_item, product_callback)
 
 class USSDProductDetailMenu(USSDMenu):
