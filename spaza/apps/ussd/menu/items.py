@@ -28,18 +28,21 @@ class USSDDatabaseMenuItem(USSDMenuItem):
   def object(self):
     return self._object
 
+def shorten(text, max_length=20):
+  if len(text) <= max_length:
+    return str(text)
+  else:
+    return str(text)[:17] + "..."
+
 def create_product_menu_item(x, callback):
-  return USSDDatabaseMenuItem("%s R%s" % (x.name.split(':')[1], x.unit_price), callback, x)
+  product_string = "%s R%s" % (shorten(x.name.split(':')[1]), x.unit_price)
+  return USSDDatabaseMenuItem(product_string, callback, x)
 
 def create_cart_menu_item(cart_item, callback):
   cart_item.update()
-  product_string = str(cart_item.product)
-  if len(product_string) > 20:
-    product_string = product_string[:20]
-    product_string += "..."
   line_item = "%dx%s=R%s" % ( \
-    cart_item.quantity, 
-    product_string, 
+    cart_item.quantity,
+    shorten(str(cart_item.product)),
     cart_item.line_total)
   return USSDDatabaseMenuItem(line_item, callback, cart_item)
 
