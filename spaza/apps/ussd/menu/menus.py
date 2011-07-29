@@ -33,7 +33,7 @@ class USSDMenu(object):
     self._items.append(USSDMenuItem(description, callback))
 
   def add_database_item(self, description, callback, item):
-    self._items.append(USSDDatbaseMenuItem(description, callback, item))
+    self._items.append(USSDDatabaseMenuItem(description, callback, item))
 
   @property
   def items(self):
@@ -197,11 +197,11 @@ class USSDStartMenu(USSDMenu):
   since we don't really want to prompt to restore the first menu.
   """
   def __init__(self):
-    from helpers import buy_stuff, where_is_my_stuff, what_are_people_buying
+    from helpers import buy_stuff, where_is_my_stuff, what_are_people_buying, help
     super(USSDStartMenu, self).__init__("Welcome to Spaza.mobi")
     self.add_item("Buy Stuff", buy_stuff)
-    self.add_item("Where is my Stuff", where_is_my_stuff)
-    self.add_item("What are people buying", what_are_people_buying)
+    #self.add_item("Where is my Stuff", where_is_my_stuff)
+    #self.add_item("What are people buying", what_are_people_buying)
     self.add_item("Help", help)
 
 class USSDCloseMenu(USSDMenu):
@@ -278,6 +278,25 @@ class USSDProductDetailMenu(USSDMenu):
     super(USSDProductDetailMenu, self).__init__("%s @ R%s ea." % (product.name, product.unit_price), back_menu)
     callback = USSDHowManyMenu(product, back_menu, add_to_trolley)
     self.add_item("Add to trolley", callback)
+
+
+class USSDModifyTrolleyMenu(USSDQuantityMenu):
+  def __init__(self, item, back_menu, callback):
+    text = "How many '%s' do you want in your trolley? Reply with the number or 0 for none."
+    super(USSDModifyTrolleyMenu, self).__init__(text % str(item.product.name), back_menu, item, callback)
+
+class USSDTrolleyItemDetailMenu(USSDMenu):
+  def __init__(self, back_menu, item):
+    from helpers import update_trolley, remove_from_trolley
+    format = "Name: %s\nPrice: R%s\nNumber to buy: %d\nTotal: %d x R%s = R%s"
+    product = item.product
+    title = format % (\
+      product.name, product.unit_price, item.quantity, 
+      item.quantity, product.unit_price, item.line_total)
+    super(USSDTrolleyItemDetailMenu, self).__init__(title, back_menu)
+    update_callback = USSDModifyTrolleyMenu(item, back_menu, update_trolley)
+    self.add_database_item("Change how many to buy", update_callback, item)
+    self.add_database_item("Remove from trolley", remove_from_trolley, item)
 
 class USSDTrolleyMenu(USSDListMenu):
   def __init__(self, back_menu, cart, cart_item_callback):

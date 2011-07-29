@@ -9,10 +9,11 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # default here if nothing matches
-    (r'^$',       include(ussd_urls)),
-    (r'^admin/',  include(admin.site.urls)),
-    (r'^ussd/',   include(ussd_urls)),
-    (r'^shop/',   include(shop_urls)), # <-- That's the important bit
+    (r'^$',           include(ussd_urls)),
+    (r'^admin/',      include(admin.site.urls)),
+    (r'^ussd/',       include(ussd_urls)),
+    (r'^shop/',       include(shop_urls)), # <-- That's the important bit
+    (r'^test\.php$',  include(ussd_urls)), # <-- Hack for flashmedia not updating API for mtn
     # Example:
     # (r'^spaza/', include('spaza.foo.urls')),
 

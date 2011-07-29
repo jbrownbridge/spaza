@@ -3,7 +3,9 @@ from commerce.api import get_cart_for_user
 from shop.models.cartmodel import CartItem
 
 from menus import USSDMenu, USSDStartMenu, USSDCloseMenu, USSDContinueMenu
-from menus import USSDManufacturerListMenu, USSDManufacturerProductsListMenu, USSDProductListMenu, USSDTrolleyMenu
+from menus import USSDManufacturerListMenu
+from menus import USSDManufacturerProductsListMenu, USSDProductListMenu, USSDProductDetailMenu
+from menus import USSDTrolleyMenu, USSDTrolleyItemDetailMenu
 
 from items import *
 
@@ -15,7 +17,7 @@ def buy_stuff(*args, **kwargs):
   menu.add_item("Show products", list_manufacturers) #later to become search/browse by category
   menu.add_item("Show trolley", list_items_in_trolley)
   menu.add_item("Empty trolley", empty_trolley)
-  menu.add_item("Pay for trolley", checkout)
+  #menu.add_item("Pay for trolley", checkout)
   return menu
 
 def empty_trolley(*args, **kwargs):
@@ -45,15 +47,41 @@ def list_items_in_trolley(*args, **kwargs):
     return USSDTrolleyMenu(
       back_menu=kwargs['parent'],
       cart=cart,
-      cart_item_callback=kwargs['parent'])
+      cart_item_callback=trolley_item_detail)
   return kwargs['parent']()
 
 def checkout(*args, **kwargs):
     pass
 
 def product_detail(*args, **kwargs):
-  from menus import USSDProductDetailMenu
   return USSDProductDetailMenu(back_menu=kwargs['parent'], product=kwargs['item'].object)
+
+def trolley_item_detail(*args, **kwargs):
+  return USSDTrolleyItemDetailMenu(back_menu=kwargs['parent'], item=kwargs['item'].object)
+
+def update_trolley(*args, **kwargs):
+  session = kwargs.get('session', None)
+  if session:
+    item = kwargs.get('item', None)
+    quantity = kwargs.get('quantity', 0)
+    if item and quantity > 0:
+      cart = get_cart_for_user(session.user)
+      cart.update_quantity(item.pk, quantity)
+      cart.update()
+      cart.save()
+  return USSDTrolleyMenu(kwargs['parent'], cart, trolley_item_detail)
+
+def remove_from_trolley(*args, **kwargs):
+  session = kwargs.get('session', None)
+  if session:
+    item = kwargs.get('item', None).object
+    if item:
+      cart = get_cart_for_user(session.user)
+      cart.delete_item(item.pk)
+      cart.update()
+      cart.save()
+  pdb.set_trace()
+  return USSDTrolleyMenu(kwargs['parent'], cart, trolley_item_detail)
 
 def add_to_trolley(*args, **kwargs):
   session = kwargs.get('session', None)
@@ -65,7 +93,7 @@ def add_to_trolley(*args, **kwargs):
       cart.add_product(product, quantity)
       cart.update()
       cart.save()
-  return kwargs['parent']() 
+  return USSDTrolleyMenu(kwargs['parent'], cart, trolley_item_detail)
 
 #Where is my stuff menus and submenus
 def where_is_my_stuff(*args, **kwargs):
