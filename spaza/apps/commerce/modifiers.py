@@ -9,7 +9,8 @@ class FixedShippingCosts(BaseCartModifier):
   """
   This will add a fixed amount of money for shipping costs.
   """
-  def add_extra_cart_price_field(self, cart):
+  def process_cart(self, cart):
     rate = decimal.Decimal(settings.SHOP_SHIPPING_FLAT_RATE)
     cart.extra_price_fields.append(('Delivery costs', rate))
+    cart.current_total += rate
     return cart

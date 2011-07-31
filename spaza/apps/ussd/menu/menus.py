@@ -327,7 +327,7 @@ class USSDTrolleyMenu(USSDListMenu):
     cart.update()
     self._cart = cart
     super(USSDTrolleyMenu, self).__init__(
-      "Trolley total is R%s" % cart.total_price, 
+      "Trolley total is R%s" % cart.subtotal_price, 
       back_menu, 
       CartItem.objects.filter(cart=cart),
       create_cart_menu_item,
@@ -357,8 +357,10 @@ class USSDCheckoutMenu(USSDYesNoMenu):
   def __init__(self, back_menu, cart):
     from helpers import get_address
     cart.update()
-    title = "Say yes to take your trolley to the till (R%s). Say no to go back. Do you wish to continue?"
-    title = title % cart.total_price
+    first_line = "Trolley items cost R%s and delivery costs R%s." % (cart.subtotal_price, cart.total_price - cart.subtotal_price)
+    second_line = "You need to pay a total of R%s." % (cart.total_price)
+    third_line = "Choose Yes to take your trolley to the till or No to go back."
+    title = "%s %s %s" % (first_line, second_line, third_line)
     super(USSDCheckoutMenu, self).__init__(title, None, None, get_address, back_menu)
 
 class USSDAddressMenu(USSDStringMenu):
@@ -375,8 +377,8 @@ class USSDOrderMenu(USSDMenu):
     from shop.models.ordermodel import Order
     from helpers import order_detail
     super(USSDOrderMenu, self).__init__("Orders", back_menu)
-    payment_required = Order.objects.filter(status__lt=Order.COMPLETED)
-    payment_received = Order.objects.filter(status__gte=Order.COMPLETED)
+    payment_required = Order.objects.filter(status__lt=Order.COMPLETED).order_by('-modified')
+    payment_received = Order.objects.filter(status__gte=Order.COMPLETED).order_by('-modified')
     self.add_item("I must still pay for", 
       USSDOrderListMenu("I must still pay for", self, order_detail, payment_required))
     self.add_item("I have payed for",

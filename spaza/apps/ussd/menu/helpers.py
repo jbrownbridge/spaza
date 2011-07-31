@@ -129,7 +129,7 @@ def order_detail(*args, **kwargs):
   order = kwargs.get('item', None)
   if order:
     order = order.object
-    title = "Order #%d: R%s" % (order.pk, order.order_total)
+    title = "Order #%d: R%s (delivery included)" % (order.pk, order.order_total)
     return USSDOrderDetailMenu(title, back_menu=kwargs['parent'], order=order)
   return kwargs['parent']()
 

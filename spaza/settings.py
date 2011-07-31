@@ -203,7 +203,7 @@ SHOP_SHIPPING_BACKENDS = [
 
 SHOP_PAYMENT_BACKENDS = [
 #  'shop.payment.backends.pay_on_delivery.PayOnDeliveryBackend'
-  'commerce.backends.SkipShippingBackend',
+#  'commerce.backends.SkipShippingBackend',
 ]
 
 SHOP_CART_MODIFIERS = [
