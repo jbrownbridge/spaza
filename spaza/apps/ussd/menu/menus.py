@@ -7,9 +7,10 @@ log = logging.getLogger(__name__)
 class USSDMenu(object):
   USSD_MAX_LENGTH = 190
 
-  def __init__(self, title=None, back_menu=None):
+  def __init__(self, title=None, back_menu=None, show_quit=True):
     self._title = title
     self._items = []
+    self._show_quit = show_quit
     if back_menu:
       self._back_menu_callback = back_menu
 
@@ -40,7 +41,8 @@ class USSDMenu(object):
     items = self._items[:]
     if self.back_menu:
       items.insert(0, USSDMenuItem("Back", self.back_menu))
-    items.append(USSDMenuItem("Quit", USSDCloseMenu()))
+    if self._show_quit:
+      items.append(USSDMenuItem("Quit", USSDCloseMenu()))
     return items
 
   def get_item_text(self, item, short=False):
@@ -161,6 +163,24 @@ class USSDListMenu(USSDMenu):
       items.append(self.next_page)
     return items
 
+class USSDStringMenu(USSDMenu):
+  def __init__(self, title, back_menu, item, callback):
+    super(USSDStringMenu, self).__init__(title)
+    self._callback = callback
+    self._back_menu = back_menu
+    self._item = item
+
+  @property
+  def items(self):
+    return []
+
+  def answer(self, reply, *args, **kwargs):
+    try:
+      return self._callback(parent=self._back_menu, string=reply, item=self._item, *args, **kwargs)
+    except:
+      pass
+    return self._back_menu
+
 class USSDQuantityMenu(USSDMenu):
   """
   Menu is overriden to take as reply a number instead of an item
@@ -197,9 +217,11 @@ class USSDStartMenu(USSDMenu):
   since we don't really want to prompt to restore the first menu.
   """
   def __init__(self):
-    from helpers import buy_stuff, where_is_my_stuff, what_are_people_buying, help
+    from helpers import buy_stuff, help
+    #from helpers import buy_stuff, where_is_my_stuff, what_are_people_buying, help
     super(USSDStartMenu, self).__init__("Welcome to Spaza.mobi")
     self.add_item("Buy Stuff", buy_stuff)
+    self.add_item("Orders", USSDOrderMenu(self))
     #self.add_item("Where is my Stuff", where_is_my_stuff)
     #self.add_item("What are people buying", what_are_people_buying)
     self.add_item("Help", help)
@@ -303,6 +325,7 @@ class USSDTrolleyMenu(USSDListMenu):
     from items import create_cart_menu_item
     from shop.models.cartmodel import CartItem
     cart.update()
+    self._cart = cart
     super(USSDTrolleyMenu, self).__init__(
       "Trolley total is R%s" % cart.total_price, 
       back_menu, 
@@ -310,4 +333,78 @@ class USSDTrolleyMenu(USSDListMenu):
       create_cart_menu_item,
       cart_item_callback,
       objects_per_page=4)
+
+  @property
+  def items(self):
+    from shop.models.cartmodel import CartItem
+    items = super(USSDTrolleyMenu, self).items
+    cart_size = CartItem.objects.filter(cart=self._cart).count()
+    if cart_size > 0:
+      items.append(USSDMenuItem("Go to till", USSDCheckoutMenu(self, self._cart)))
+    return items
+
+class USSDYesNoMenu(USSDMenu):
+  def __init__(self, title, back_menu, item, yes_callback, no_callback=None):
+    # No back menu
+    super(USSDYesNoMenu, self).__init__(title, back_menu=back_menu, show_quit=False)
+    if item:
+      self.add_database_item("Yes", yes_callback, item)
+    else:
+      self.add_item("Yes", yes_callback)
+    self.add_item("No", no_callback)
+
+class USSDCheckoutMenu(USSDYesNoMenu):
+  def __init__(self, back_menu, cart):
+    from helpers import get_address
+    cart.update()
+    title = "Say yes to take your trolley to the till (R%s). Say no to go back. Do you wish to continue?"
+    title = title % cart.total_price
+    super(USSDCheckoutMenu, self).__init__(title, None, None, get_address, back_menu)
+
+class USSDAddressMenu(USSDStringMenu):
+  """
+  We need an address to send it to
+  """
+  def __init__(self, back_menu, address=None):
+    from helpers import save_address
+    title = "Where must we send your goods (please reply with an address that a taxi could find)?"
+    super(USSDAddressMenu, self).__init__(title, back_menu, address, save_address)
+
+class USSDOrderMenu(USSDMenu):
+  def __init__(self, back_menu):
+    from shop.models.ordermodel import Order
+    from helpers import order_detail
+    super(USSDOrderMenu, self).__init__("Orders", back_menu)
+    payment_required = Order.objects.filter(status__lt=Order.COMPLETED)
+    payment_received = Order.objects.filter(status__gte=Order.COMPLETED)
+    self.add_item("I must still pay for", 
+      USSDOrderListMenu("I must still pay for", self, order_detail, payment_required))
+    self.add_item("I have payed for",
+      USSDOrderListMenu("I have payed for", self, order_detail, payment_received))
+
+class USSDOrderListMenu(USSDListMenu):
+  """
+  Menu that handles products by wrappin them in the item
+  """
+  def __init__(self, title, back_menu, order_callback, orders):
+    from items import create_order_menu_item
+    super(USSDOrderListMenu, self).__init__(title, back_menu, orders, create_order_menu_item, order_callback)
+
+class USSDOrderDetailMenu(USSDListMenu):
+  def __init__(self, title, back_menu, order):
+    from items import create_order_item_menu_item
+    from shop.models.ordermodel import OrderItem
+    from helpers import order_item_detail
+    super(USSDOrderDetailMenu, self).__init__(
+      title, 
+      back_menu, 
+      OrderItem.objects.filter(order=order),
+      create_order_item_menu_item,
+      order_item_detail,
+      objects_per_page=4)
+
+class USSDOrderItemDetailMenu(USSDMenu):
+  def __init__(self, back_menu, item):
+    title = "%dx%s=R%s" % (item.quantity, item.product_name, item.line_total)
+    super(USSDOrderItemDetailMenu, self).__init__(title, back_menu, show_quit=False)
 

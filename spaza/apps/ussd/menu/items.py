@@ -41,6 +41,17 @@ def create_product_menu_item(x, callback):
   product_string = "%s R%s" % (shorten(x.name.split(':')[1]), x.unit_price)
   return USSDDatabaseMenuItem(product_string, callback, x)
 
+def create_order_menu_item(x, callback):
+  order_string = "Order #%d: R%s" % (x.pk, x.order_total)
+  return USSDDatabaseMenuItem(order_string, callback, x)
+
+def create_order_item_menu_item(order_item, callback):
+  line_item = "%dx%s=R%s" % ( \
+    order_item.quantity,
+    shorten(str(order_item.product_name)),
+    order_item.line_total)
+  return USSDDatabaseMenuItem(line_item, callback, order_item)
+
 def create_cart_menu_item(cart_item, callback):
   cart_item.update()
   line_item = "%dx%s=R%s" % ( \

@@ -4,8 +4,7 @@ from django.contrib.auth.models import User
 
 SIMPLE_ADDRESS_TEMPLATE = \
 _("""
-Name: %(name)s,
-Address: %(address)s,
+%(address)s
 """)
 
 class Address(models.Model):
@@ -14,7 +13,6 @@ class Address(models.Model):
   user_billing = models.OneToOneField(User, related_name='billing_address',
                                       blank=True, null=True)
 
-  name = models.CharField(_('Name'), max_length=255)
   address = models.CharField(_('Address'), max_length=255)
 
   class Meta(object):
@@ -22,7 +20,7 @@ class Address(models.Model):
     verbose_name_plural = _("Addresses")
 
   def __unicode__(self):
-    return '%s (%s)' % (self.name, self.address)
+    return '%s' % (self.address)
 
   def clone(self):
     new_kwargs = dict([(fld.name, getattr(self, fld.name))
@@ -31,7 +29,6 @@ class Address(models.Model):
 
   def as_text(self):
     return SIMPLE_ADDRESS_TEMPLATE % {
-      'name':self.name, 'address':self.address
+      'address':self.address
     }
-
 

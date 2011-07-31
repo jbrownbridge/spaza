@@ -103,6 +103,7 @@ AUTHENTICATION_BACKENDS= (
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -201,5 +202,11 @@ SHOP_SHIPPING_BACKENDS = [
 ]
 
 SHOP_PAYMENT_BACKENDS = [
-  'shop.payment.backends.pay_on_delivery.PayOnDeliveryBackend'
+#  'shop.payment.backends.pay_on_delivery.PayOnDeliveryBackend'
+  'commerce.backends.SkipShippingBackend',
+]
+
+SHOP_CART_MODIFIERS = [
+#  'shop_simplevariations.cart_modifier.ProductOptionsModifier',
+  'commerce.modifiers.FixedShippingCosts',
 ]
