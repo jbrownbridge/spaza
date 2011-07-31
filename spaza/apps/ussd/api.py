@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 def handle_restore(session):
   log.debug("Dead session brought back to life: %s" % session)
-  session.current_menu = continue_from_last_time(session.current_menu)
+  session.current_menu = continue_from_last_time(session.current_menu, session=session)
   session.save()
   return str(session.current_menu)
 
