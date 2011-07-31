@@ -216,12 +216,12 @@ class USSDStartMenu(USSDMenu):
   Menu is overriden to change the behaviour of session restore,
   since we don't really want to prompt to restore the first menu.
   """
-  def __init__(self):
+  def __init__(self, user):
     from helpers import buy_stuff, help
     #from helpers import buy_stuff, where_is_my_stuff, what_are_people_buying, help
     super(USSDStartMenu, self).__init__("Welcome to Spaza.mobi")
     self.add_item("Buy Stuff", buy_stuff)
-    self.add_item("Orders", USSDOrderMenu(self))
+    self.add_item("Orders", USSDOrderMenu(self, user))
     #self.add_item("Where is my Stuff", where_is_my_stuff)
     #self.add_item("What are people buying", what_are_people_buying)
     self.add_item("Help", help)
@@ -250,10 +250,10 @@ class USSDContinueMenu(USSDMenu):
   Continue method has slightly different behaviour than USSDMenu,
   instead of invoking a callback it stores menu items.
   """
-  def __init__(self, old_menu):
+  def __init__(self, old_menu, user):
     super(USSDContinueMenu, self).__init__("Continue from last time?")
     super(USSDContinueMenu, self).add_item("Yes", old_menu)
-    super(USSDContinueMenu, self).add_item("No", USSDStartMenu())
+    super(USSDContinueMenu, self).add_item("No", USSDStartMenu(user))
 
   def add_item(self, description, callback):
     raise NotImplementedError
@@ -373,12 +373,12 @@ class USSDAddressMenu(USSDStringMenu):
     super(USSDAddressMenu, self).__init__(title, back_menu, address, save_address)
 
 class USSDOrderMenu(USSDMenu):
-  def __init__(self, back_menu):
+  def __init__(self, back_menu, user):
     from shop.models.ordermodel import Order
     from helpers import order_detail
     super(USSDOrderMenu, self).__init__("Orders", back_menu)
-    payment_required = Order.objects.filter(status__lt=Order.COMPLETED).order_by('-modified')
-    payment_received = Order.objects.filter(status__gte=Order.COMPLETED).order_by('-modified')
+    payment_required = Order.objects.filter(user=user).filter(status__lt=Order.COMPLETED).order_by('-modified')
+    payment_received = Order.objects.filter(user=user).filter(status__gte=Order.COMPLETED).order_by('-modified')
     self.add_item("I must still pay for", 
       USSDOrderListMenu("I must still pay for", self, order_detail, payment_required))
     self.add_item("I have payed for",

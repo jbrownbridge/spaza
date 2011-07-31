@@ -16,12 +16,12 @@ def handle_session(session, message):
   return str(session.current_menu)
 
 def handle_start(session):
-  session.current_menu = welcome()
+  session.current_menu = welcome(session=session)
   session.save()
   return str(session.current_menu)
 
 def handle_end(session):
-  session.current_menu = goodbye()
+  session.current_menu = goodbye(session=session)
   session.save()
   return str(session.current_menu)
 

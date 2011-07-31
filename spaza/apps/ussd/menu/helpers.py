@@ -117,7 +117,7 @@ def checkout(*args, **kwargs):
           order.set_billing_address(address)
           order.save()
           cart.empty()
-        return USSDStartMenu() 
+        return USSDStartMenu(user=session.user) 
       except:
         if order:
           order.delete()
@@ -198,16 +198,18 @@ def help(*args, **kwargs):
   return menu
 
 def welcome(*args, **kwargs):
-  return USSDStartMenu()
+  session = kwargs.get('session', None)
+  return USSDStartMenu(user=session.user)
 
 def goodbye(*args, **kwargs):
   return USSDCloseMenu()
 
 def continue_from_last_time(old_menu, *args, **kwargs):
+  session = kwargs.get('session', None)
   if isinstance(old_menu, USSDContinueMenu):
     return old_menu
   elif isinstance(old_menu, USSDStartMenu):
     return old_menu
   else:
-    return USSDContinueMenu(old_menu)
+    return USSDContinueMenu(old_menu, session.user)
 
