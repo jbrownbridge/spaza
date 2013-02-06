@@ -76,12 +76,11 @@ Running XMPP Server
 =========================
 1. Create virtual environment: mkvirtualenv --no-site-packages spaza
 3. Install requirements: pip install -r config/requirements.pip
-4. Start twisted server: twistd --pidfile=tmp/twistd.xmpp.pid -n xmpp --xmpp-username=ussd2@valency.co.za
-5. Enter password when prompted: easypass
-6. Add ussd2@valency.co.za as jabber contact in gtalk/etc.
+4. Start twisted server: twistd --pidfile=tmp/twistd.xmpp.pid -n xmpp --xmpp-username=some-jabber-username
+5. Enter password when prompted: some-jabber-password
+6. Add some-jabber-username as jabber contact in gtalk/etc.
 7. Send $start and follow menus
 
 Using USSD
 ==================
-1. Dial *120*364*777*3532893#
-2. If this doesn''t work contact Jason to update valency server.
+1. Dial *120*364*777*3532893# (This won't work, you will need to sort out your own providers)
